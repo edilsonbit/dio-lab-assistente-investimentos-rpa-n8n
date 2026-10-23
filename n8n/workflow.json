@@ -8,13 +8,13 @@
         "responseMode": "responseNode",
         "options": {}
       },
-      "id": "18b75892-d336-43ae-9b5f-67bdb3f929bd",
+      "id": "34f35447-f936-4720-87fe-d11834f57cb1",
       "name": "Webhook",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
       "position": [
-        0,
-        300
+        3888,
+        784
       ],
       "webhookId": "418d0d0e-a772-40b6-88fa-bc0e7d38c1fa"
     },
@@ -24,19 +24,18 @@
         "options": {
           "response": {
             "response": {
-              "responseFormat": "text",
-              "outputPropertyName": "data"
+              "responseFormat": "text"
             }
           }
         }
       },
-      "id": "323219c1-bb39-41ba-9ead-527a067620ef",
+      "id": "1465f0e7-4b75-417b-aa43-ed10ffd15d79",
       "name": "Baixar Investimentos",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        220,
-        300
+        4112,
+        784
       ],
       "executeOnce": true
     },
@@ -44,13 +43,13 @@
       "parameters": {
         "jsCode": "// Recebe os clientes do Webhook e o CSV de investimentos e devolve 1 item por cliente\n// com os produtos do perfil dele que cabem no saldo.\nconst clientes = $('Webhook').first().json.body.clientes || [];\nconst csv = $('Baixar Investimentos').first().json.data || '';\n\n// \"R$ 12.500,00\" -> 12500\nconst paraNumero = (texto) =>\n  Number(String(texto).replace(/[^\\d,]/g, '').replace(',', '.')) || 0;\n\nconst [cabecalho, ...linhas] = csv.trim().split(/\\r?\\n/);\nconst campos = cabecalho.split(',').map((c) => c.trim());\nconst investimentos = linhas.map((linha) => {\n  const valores = linha.split(',');\n  const item = Object.fromEntries(campos.map((c, i) => [c, (valores[i] || '').trim()]));\n  item.minimo = paraNumero(item.minimo);\n  return item;\n});\n\nreturn clientes.map((cliente) => {\n  const saldo = paraNumero(cliente.saldo);\n  const doPerfil = investimentos\n    .filter((inv) => inv.perfil.toLowerCase() === String(cliente.perfil).toLowerCase())\n    .sort((a, b) => a.minimo - b.minimo);\n  const elegiveis = doPerfil.filter((inv) => inv.minimo <= saldo);\n  // Se o saldo não cobre nenhum mínimo, sugere o de menor aporte do perfil.\n  const sugeridos = elegiveis.length ? elegiveis : doPerfil.slice(0, 1);\n\n  return {\n    json: {\n      nome: cliente.nome,\n      primeiroNome: String(cliente.nome).split(' ')[0],\n      email: cliente.email,\n      perfil: cliente.perfil,\n      saldo: cliente.saldo,\n      saldoNumero: saldo,\n      produtos: sugeridos,\n      produtosTexto: sugeridos\n        .map((p) => `${p.produto} (mínimo R$ ${p.minimo.toLocaleString('pt-BR')}, rentabilidade ${p.rentabilidade})`)\n        .join('; '),\n      saldoCobreMinimo: elegiveis.length > 0,\n    },\n  };\n});\n"
       },
-      "id": "1f751f99-d22e-471c-96b7-4a043fb2481b",
+      "id": "51967b4c-4ad4-4cf7-8141-3ab04dcb874b",
       "name": "Cruzar Dados",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        440,
-        300
+        4336,
+        784
       ]
     },
     {
@@ -59,7 +58,8 @@
           "options": {
             "caseSensitive": false,
             "leftValue": "",
-            "typeValidation": "loose"
+            "typeValidation": "loose",
+            "version": 1
           },
           "conditions": [
             {
@@ -76,13 +76,13 @@
         },
         "options": {}
       },
-      "id": "2ee1fc08-7a37-4afe-8e0e-0d8e47fa838b",
+      "id": "a19ed1e4-0931-4466-8a91-1ee17ab85562",
       "name": "Usar IA?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
       "position": [
-        660,
-        300
+        4560,
+        784
       ]
     },
     {
@@ -93,13 +93,13 @@
           "systemMessage": "Você é um assistente de relacionamento de uma corretora brasileira. Escreva mensagens curtas (até 80 palavras), cordiais e em português do Brasil, chamando o cliente pelo primeiro nome.\n\nRegras:\n- Recomende apenas os produtos da lista recebida; não invente produtos, taxas ou valores.\n- Explique em uma frase por que os produtos combinam com o perfil e o saldo do cliente.\n- Se o saldo não cobrir o aporte mínimo, incentive o cliente a juntar o valor, sem pressão.\n- Não prometa rentabilidade garantida.\n- Crie também um assunto de e-mail curto (até 60 caracteres) no formato \"Sugestão de Investimento: <produto principal>\".\n\nResponda somente com um JSON válido, sem texto fora dele:\n{\"assunto\": \"...\", \"mensagem\": \"...\"}"
         }
       },
-      "id": "4dd72d2f-a935-4253-915c-90801344652d",
+      "id": "9400f6ae-8eda-4e9e-92b2-399ccc4547a0",
       "name": "Agente de IA",
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 1.7,
       "position": [
-        900,
-        160
+        4800,
+        640
       ]
     },
     {
@@ -114,39 +114,46 @@
           "temperature": 0.7
         }
       },
-      "id": "7ed18eeb-829e-4d17-859e-58d1c00587d2",
+      "id": "d017e602-e548-423b-b548-cd5f183b90d7",
       "name": "OpenAI Chat Model",
       "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
       "typeVersion": 1.2,
       "position": [
-        900,
-        380
-      ]
+        4800,
+        864
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
     },
     {
       "parameters": {
         "jsCode": "// O Agente devolve um JSON {assunto, mensagem} em \"output\"; junta de volta com os dados do cliente\n// (o Agente processa os itens na mesma ordem em que os recebe).\nconst clientes = $('Cruzar Dados').all();\n\n// Se o modelo não devolver JSON válido, usa o texto inteiro como mensagem e um assunto padrão.\nconst lerSaida = (texto, c) => {\n  const limpo = String(texto || '').replace(/```(json)?/gi, '').trim();\n  try {\n    const { assunto, mensagem } = JSON.parse(limpo);\n    if (assunto && mensagem) return { assunto: String(assunto).trim(), mensagem: String(mensagem).trim() };\n  } catch (e) {}\n  return { assunto: `Sugestão de Investimento: ${c.produtos[0]?.produto || c.perfil}`, mensagem: limpo };\n};\n\nreturn $input.all().map((item, i) => {\n  const c = clientes[i].json;\n  return {\n    json: {\n      nome: c.nome,\n      email: c.email,\n      perfil: c.perfil,\n      saldo: c.saldo,\n      origem: 'ia',\n      ...lerSaida(item.json.output, c),\n    },\n  };\n});\n"
       },
-      "id": "55ceb343-2e28-402b-867f-8d6a2021e391",
+      "id": "987aed0f-18fa-47b9-bf22-cdb691751bfa",
       "name": "Formatar Resposta IA",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1200,
-        160
+        5088,
+        640
       ]
     },
     {
       "parameters": {
         "jsCode": "// MVP: mensagem fixa por perfil, completada com os produtos que cabem no saldo.\nconst templates = {\n  conservador:\n    'Olá, {nome}! Como seu perfil é Conservador, priorizamos segurança e renda fixa. Para o seu saldo de {saldo}, sugerimos: {produtos}.',\n  moderado:\n    'Olá, {nome}! Seu perfil Moderado combina segurança e crescimento, com um mix equilibrado entre renda fixa e variável. Para o seu saldo de {saldo}, sugerimos: {produtos}.',\n  arrojado:\n    'Olá, {nome}! Com perfil Arrojado, você busca maior potencial de retorno e aceita mais oscilação. Para o seu saldo de {saldo}, sugerimos: {produtos}.',\n};\nconst padrao = 'Olá, {nome}! Para o seu saldo de {saldo}, sugerimos: {produtos}.';\n\nreturn $input.all().map(({ json: c }) => {\n  const modelo = templates[String(c.perfil).toLowerCase()] || padrao;\n  let mensagem = modelo\n    .replace('{nome}', c.primeiroNome)\n    .replace('{saldo}', c.saldo)\n    .replace('{produtos}', c.produtosTexto);\n  if (!c.saldoCobreMinimo) {\n    mensagem += ' Seu saldo ainda não atinge o aporte mínimo; com um pequeno reforço você já pode começar.';\n  }\n\n  const assunto = `Sugestão de Investimento: ${c.produtos[0]?.produto || c.perfil}`;\n\n  return {\n    json: { nome: c.nome, email: c.email, perfil: c.perfil, saldo: c.saldo, origem: 'template', assunto, mensagem },\n  };\n});\n"
       },
-      "id": "aee40a77-e39d-45d0-99fe-6ff62d9dcee2",
+      "id": "c5ab04e9-1aa0-481e-a278-e12ca063c576",
       "name": "Mensagem Estática",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        900,
-        560
+        4800,
+        1040
       ]
     },
     {
@@ -154,43 +161,48 @@
         "respondWith": "allIncomingItems",
         "options": {}
       },
-      "id": "5bac3187-2b24-4773-9163-83f7d9e8a1e5",
+      "id": "9bb1941a-172d-418a-b47c-4a4ecc050f40",
       "name": "Responder Webhook",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
       "position": [
-        1440,
-        200
+        5856,
+        944
       ]
     },
     {
       "parameters": {
-        "resource": "message",
-        "operation": "send",
         "sendTo": "SEU_EMAIL_DE_TESTE@gmail.com",
-        "subject": "={{ $json.assunto }} | {{ $json.nome }} <{{ $json.email }}>",
-        "emailType": "text",
-        "message": "={{ $json.mensagem }}\n\n---\nPara: {{ $json.nome }} <{{ $json.email }}> | Perfil: {{ $json.perfil }} | Saldo: {{ $json.saldo }} | Gerada por: {{ $json.origem }}",
+        "subject": "={{ $json.assunto }}",
+        "message": "={{ $json.mensagem }}\n",
         "options": {
           "appendAttribution": false
         }
       },
-      "id": "30737b50-ee6a-4e64-b8e6-a79f3889915f",
+      "id": "dfe34ccc-d400-449f-865c-8776bf4e6827",
       "name": "Enviar Email (Gmail)",
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2.1,
       "position": [
-        1680,
-        360
-      ]
+        5568,
+        848
+      ],
+      "webhookId": "3d7a1256-80ba-4cb2-b96d-55e6c505a7e4",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "bMoIVKWTN6ye6d9J",
+          "name": "Gmail account"
+        }
+      }
     },
     {
       "parameters": {
         "conditions": {
           "options": {
-            "caseSensitive": false,
+            "caseSensitive": true,
             "leftValue": "",
-            "typeValidation": "loose"
+            "typeValidation": "strict",
+            "version": 1
           },
           "conditions": [
             {
@@ -207,13 +219,13 @@
         },
         "options": {}
       },
-      "id": "c65bb0f0-b7c0-4a97-ace4-3c50b6b24c30",
+      "id": "6844a4be-c0c1-42fe-b8ed-506f496b0b7b",
       "name": "Email Válido?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
       "position": [
-        1440,
-        440
+        5328,
+        928
       ]
     },
     {
@@ -231,16 +243,17 @@
         "includeOtherFields": true,
         "options": {}
       },
-      "id": "8359ddd2-9a50-4fac-accc-c65ed671a90f",
+      "id": "bf701d42-21d7-4b5c-8f65-cf696fdb76ef",
       "name": "Registrar Email Inválido",
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        1680,
-        540
+        5568,
+        1024
       ]
     }
   ],
+  "pinData": {},
   "connections": {
     "Webhook": {
       "main": [
@@ -319,11 +332,6 @@
       "main": [
         [
           {
-            "node": "Responder Webhook",
-            "type": "main",
-            "index": 0
-          },
-          {
             "node": "Email Válido?",
             "type": "main",
             "index": 0
@@ -334,11 +342,6 @@
     "Mensagem Estática": {
       "main": [
         [
-          {
-            "node": "Responder Webhook",
-            "type": "main",
-            "index": 0
-          },
           {
             "node": "Email Válido?",
             "type": "main",
@@ -364,15 +367,41 @@
           }
         ]
       ]
+    },
+    "Enviar Email (Gmail)": {
+      "main": [
+        [
+          {
+            "node": "Responder Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Registrar Email Inválido": {
+      "main": [
+        [
+          {
+            "node": "Responder Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
-  "pinData": {},
   "active": false,
   "settings": {
-    "executionOrder": "v1"
+    "executionOrder": "v1",
+    "binaryMode": "separate"
   },
+  "versionId": "ec7cd6ba-ff17-40d2-b37a-b1209e9dd0a8",
   "meta": {
-    "templateCredsSetupCompleted": false
+    "templateCredsSetupCompleted": true,
+    "instanceId": "34dc4dcae2ffa616877d067aa9f7c7981a8fdd27f6671c42bcf7c3267092d91b"
   },
+  "nodeGroups": [],
+  "id": "dRK8Vn2Ylk7ssmxJ",
   "tags": []
 }

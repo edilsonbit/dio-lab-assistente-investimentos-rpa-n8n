@@ -1,5 +1,25 @@
 # Criando um Assistente de Investimentos com RPA e IA Generativa
 
+## ✅ Minha implementação
+
+- **RPA:** [`rpa/extrair_clientes.ipynb`](rpa/extrair_clientes.ipynb) extrai os 10 clientes e envia ao Webhook do N8N.
+- **Workflow:** [`n8n/workflow.json`](n8n/workflow.json) cruza perfil e saldo com o CSV, gera assunto e mensagem com Agente de IA (OpenAI), valida o e-mail e envia pelo Gmail.
+- **Decisões técnicas e como importar:** [`n8n/README.md`](n8n/README.md).
+
+### Evidências
+
+**Workflow executado no N8N**
+
+![Workflow N8N](prints/workflow.png)
+
+**Script RPA recebendo `Status: 200` do Webhook**
+
+![Status 200](prints/status-200.png)
+
+**E-mail gerado pela IA na caixa de entrada**
+
+![E-mail recebido](prints/email.png)
+
 ## Descrição
 
 Aprenda na prática como criar um fluxo de automação inteligente combinando técnicas de RPA (Robotic Process Automation) com workflows de IA no N8N.
